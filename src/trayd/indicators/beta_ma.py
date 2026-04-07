@@ -3,12 +3,15 @@ from .indicator import Indicator
 from trayd.data import OHLCV
 import numpy as np
 
+
 class BetaMA(Indicator):
     """
     Rolling Beta moving average to a reference symbol.
     """
 
-    def __init__(self, reference_symbol: str, window: int, price: OHLCV = OHLCV.CLOSE):
+    def __init__(
+        self, reference_symbol: str, window: int, price: OHLCV = OHLCV.CLOSE
+    ):
         self.reference_symbol = reference_symbol
         self.window = window
         self.price = price
@@ -21,7 +24,9 @@ class BetaMA(Indicator):
         return [self.reference_symbol, self.window, self.price]
 
     def compute(self):
-        values = self.historical.bar_data[:, :, self.price]  # (symbols, timestamps)
+        values = self.historical.bar_data[
+            :, :, self.price
+        ]  # (symbols, timestamps)
         num_symbols, num_timestamps = values.shape
 
         ref_idx = self.historical.symbol_index[self.reference_symbol]
@@ -45,14 +50,16 @@ class BetaMA(Indicator):
 
         for t in range(self.window, num_timestamps):
             # slice window
-            window_ret = returns[:, t - self.window:t]
-            window_ref = ref_returns[t - self.window:t]
+            window_ret = returns[:, t - self.window : t]
+            window_ref = ref_returns[t - self.window : t]
 
             # mean subtraction
             mean_window = np.nanmean(window_ret, axis=1, keepdims=True)
             mean_ref = np.nanmean(window_ref)
 
-            cov = np.nansum((window_ret - mean_window) * (window_ref - mean_ref), axis=1) / (self.window - 1)
+            cov = np.nansum(
+                (window_ret - mean_window) * (window_ref - mean_ref), axis=1
+            ) / (self.window - 1)
             var = np.nanvar(window_ref, ddof=1)
 
             beta[:, t] = cov / var if var != 0 else np.nan

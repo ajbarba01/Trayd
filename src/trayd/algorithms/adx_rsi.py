@@ -18,7 +18,6 @@ class ADXRSI(Algorithm):
 
         self.portfolio_max_size = 15
 
-
     def on_start(self):
         self.test_index = self.add_index(SP100())
 
@@ -27,7 +26,6 @@ class ADXRSI(Algorithm):
         self.adx = self.add_indicator(ADX(period=5))
         self.rsi2 = self.add_indicator(RSI(period=2))
 
-
     def on_tick(self):
         for symbol in self.get_positions():
             curr_close = self.get_close(symbol)
@@ -35,8 +33,10 @@ class ADXRSI(Algorithm):
             if curr_close > prev_high:
                 self.close_position(symbol)
 
-        if not self.get_close("SPY") > self.sma200.get("SPY"): return
-        if not self.get_close("OEF") > self.sma200.get("OEF"): return
+        if not self.get_close("SPY") > self.sma200.get("SPY"):
+            return
+        if not self.get_close("OEF") > self.sma200.get("OEF"):
+            return
         # if not self.get_close("IWM") > self.sma200.get("IWM"): return
 
         symbols = self.test_index.get_valid_symbols()
@@ -49,14 +49,9 @@ class ADXRSI(Algorithm):
             if self.adx.get(symbol) > self.adx.get(symbol, -1):
                 self.buy_up_to(symbol)
 
-
     def on_position_opened(self, position: Position):
         return
         self.set_stop_take(position.symbol, position.avg_entry_price, 1, 2)
-            
-    
 
     def end(self):
         pass
-
-

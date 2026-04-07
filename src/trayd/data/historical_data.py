@@ -17,7 +17,7 @@ from .ohlcv import OHLCV
 
 if TYPE_CHECKING:
     from trayd.indicators import Indicator
-    
+
 
 class HistoricalData:
     def __init__(self, granularity: Granularity = Granularity.DAY):
@@ -27,7 +27,9 @@ class HistoricalData:
         self.symbol_index: dict[str, int] = {}  # symbol -> index
 
         self.bar_data: np.ndarray  # shape: (num_symbols, num_timestamps, 5)
-        self.indicator_data: np.ndarray  # shape: (num_symbols, num_indicators, num_timestamps)
+        self.indicator_data: (
+            np.ndarray
+        )  # shape: (num_symbols, num_indicators, num_timestamps)
         self.num_indicators: int = 0
         self.indicators: list[Indicator] = []
         self.indicator_registry: dict[str, Indicator] = {}
@@ -35,7 +37,7 @@ class HistoricalData:
         self.global_timestamps: pd.DatetimeIndex
         self.current_ts_idx: int = 0
         self.current_ts: pd.Timestamp = None
-        self.current_valid_mask: np.ndarray  = None
+        self.current_valid_mask: np.ndarray = None
 
         self.delist_times: dict[pd.Timestamp, list[str]] = {}
         self.just_delisted: list[str] = []
@@ -68,32 +70,31 @@ class HistoricalData:
         self.current_valid_mask = self._compute_valid_mask(self.current_ts_idx)
 
         if self.current_ts in self.delist_times:
-            self.just_delisted += self.delist_times[self.current_ts] 
+            self.just_delisted += self.delist_times[self.current_ts]
 
         return self.current_ts
-    
+
     def skip(self) -> pd.Timestamp:
         self.current_ts_idx += 1
         self.current_ts = self.global_timestamps[self.current_ts_idx]
 
         if self.current_ts in self.delist_times:
-            self.just_delisted = self.delist_times[self.current_ts] 
+            self.just_delisted = self.delist_times[self.current_ts]
 
         return self.current_ts
-    
+
     def get_delisted(self) -> list[str]:
         delisted = self.just_delisted.copy()
         self.just_delisted.clear()
 
         return delisted
 
-
     def add_indicator(self, ind: Indicator):
         sig = ind.signature
 
         if sig in self.indicator_registry:
             return self.indicator_registry[sig]
-        
+
         resolved_reqs = []
         for req in ind.get_prereqs():
             existing = self.add_indicator(req)
@@ -112,8 +113,13 @@ class HistoricalData:
 
         return ind
 
-
-    def load_all(self, symbols: dict[str, pd.Timestamp], start_date: str, end_date: str, max_workers: int = 20):
+    def load_all(
+        self,
+        symbols: dict[str, pd.Timestamp],
+        start_date: str,
+        end_date: str,
+        max_workers: int = 20,
+    ):
         self.pbar.start(list(symbols.keys()), 10)
 
         symbols_list = list(symbols.keys())
@@ -154,7 +160,10 @@ class HistoricalData:
 
         # Launch threads
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_symbol = {executor.submit(load_symbol, symbol, symbol_start): symbol for symbol, symbol_start in symbols.items()}
+            future_to_symbol = {
+                executor.submit(load_symbol, symbol, symbol_start): symbol
+                for symbol, symbol_start in symbols.items()
+            }
             for future in as_completed(future_to_symbol):
                 result = future.result()
                 self.pbar.next()
@@ -182,7 +191,9 @@ class HistoricalData:
         else:
             bar_length = 5
 
-        self.bar_data = np.full((num_symbols, num_timestamps, bar_length), np.nan, dtype=np.float64)
+        self.bar_data = np.full(
+            (num_symbols, num_timestamps, bar_length), np.nan, dtype=np.float64
+        )
 
         # Fill bar data using vectorized indexing
         for symbol, df in loaded_data:
@@ -198,13 +209,20 @@ class HistoricalData:
                 self.bar_data[i, idx, OHLCV.VWAP] = df["VWAP"].to_numpy()
 
         # Initialize indicator array (empty for now)
-        self.indicator_data = np.empty((num_symbols, self.num_indicators, num_timestamps), dtype=np.float64)
+        self.indicator_data = np.empty(
+            (num_symbols, self.num_indicators, num_timestamps), dtype=np.float64
+        )
         self.indicator_data.fill(np.nan)
 
         # Start index
-        self.current_ts_idx = max(np.searchsorted(self.global_timestamps, target_start), self.warmup_window - 1)
+        self.current_ts_idx = max(
+            np.searchsorted(self.global_timestamps, target_start),
+            self.warmup_window - 1,
+        )
         self.current_ts = self.global_timestamps[self.current_ts_idx]
-        self.current_valid_mask = ~np.isnan(self.bar_data[:, self.current_ts_idx, OHLCV.CLOSE])
+        self.current_valid_mask = ~np.isnan(
+            self.bar_data[:, self.current_ts_idx, OHLCV.CLOSE]
+        )
 
         self.load_indicators()
         self.pbar.stop()
@@ -214,7 +232,6 @@ class HistoricalData:
             self.delist_times[timestamp].append(symbol)
         else:
             self.delist_times[timestamp] = [symbol]
-
 
     def load_indicators(self):
         # Logger.log_message("WARMUP WINDOW:", self.warmup_window)
@@ -228,38 +245,66 @@ class HistoricalData:
         return self.symbol_index[symbol]
 
     def get_open(self, symbol: str, offset: int = 0) -> float:
-        return self.bar_data[self._get_symbol_idx(symbol), self.current_ts_idx + offset - self.offset_offset, OHLCV.OPEN]
+        return self.bar_data[
+            self._get_symbol_idx(symbol),
+            self.current_ts_idx + offset - self.offset_offset,
+            OHLCV.OPEN,
+        ]
 
     def get_high(self, symbol: str, offset: int = 0) -> float:
-        return self.bar_data[self._get_symbol_idx(symbol), self.current_ts_idx + offset - self.offset_offset, OHLCV.HIGH]
+        return self.bar_data[
+            self._get_symbol_idx(symbol),
+            self.current_ts_idx + offset - self.offset_offset,
+            OHLCV.HIGH,
+        ]
 
     def get_low(self, symbol: str, offset: int = 0) -> float:
-        return self.bar_data[self._get_symbol_idx(symbol), self.current_ts_idx + offset - self.offset_offset, OHLCV.LOW]
+        return self.bar_data[
+            self._get_symbol_idx(symbol),
+            self.current_ts_idx + offset - self.offset_offset,
+            OHLCV.LOW,
+        ]
 
     def get_close(self, symbol: str, offset: int = 0) -> float:
-        return self.bar_data[self._get_symbol_idx(symbol), self.current_ts_idx + offset - self.offset_offset, OHLCV.CLOSE]
+        return self.bar_data[
+            self._get_symbol_idx(symbol),
+            self.current_ts_idx + offset - self.offset_offset,
+            OHLCV.CLOSE,
+        ]
 
     def get_volume(self, symbol: str, offset: int = 0) -> float:
-        return self.bar_data[self._get_symbol_idx(symbol), self.current_ts_idx + offset - self.offset_offset, OHLCV.VOLUME]
-    
+        return self.bar_data[
+            self._get_symbol_idx(symbol),
+            self.current_ts_idx + offset - self.offset_offset,
+            OHLCV.VOLUME,
+        ]
+
     def get_VWAP(self, symbol: str, offset: int = 0) -> float:
-        return self.bar_data[self._get_symbol_idx(symbol), self.current_ts_idx + offset - self.offset_offset, OHLCV.VWAP]
+        return self.bar_data[
+            self._get_symbol_idx(symbol),
+            self.current_ts_idx + offset - self.offset_offset,
+            OHLCV.VWAP,
+        ]
 
     def has_bar(self, symbol: str, offset: int = 0) -> bool:
         i = self._get_symbol_idx(symbol)
         return self.current_valid_mask[i + offset - self.offset_offset]
 
-    def get_indicator_data(self, symbol: str, key: int, offset: int = 0) -> float:
+    def get_indicator_data(
+        self, symbol: str, key: int, offset: int = 0
+    ) -> float:
         i = self._get_symbol_idx(symbol)
-        return self.indicator_data[i, key, self.current_ts_idx + offset - self.offset_offset]
-    
+        return self.indicator_data[
+            i, key, self.current_ts_idx + offset - self.offset_offset
+        ]
+
     def is_valid(self, symbol: str) -> bool:
         i = self.symbol_index.get(symbol)
         if i is None:
             return False
 
         return bool(self.current_valid_mask[i])
-    
+
     def _compute_valid_mask(self, ts_idx: int) -> np.ndarray:
         w = self.warmup_window
 
@@ -267,11 +312,7 @@ class HistoricalData:
         if ts_idx < w - 1:
             return np.zeros(len(self.symbols), dtype=bool)
 
-        window = self.bar_data[
-            :, 
-            ts_idx - w + 1 : ts_idx + 1, 
-            OHLCV.CLOSE
-        ]
+        window = self.bar_data[:, ts_idx - w + 1 : ts_idx + 1, OHLCV.CLOSE]
 
         return np.all(~np.isnan(window), axis=1)
 

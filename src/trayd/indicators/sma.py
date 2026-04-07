@@ -13,14 +13,11 @@ class SMA(Indicator):
 
         super().__init__("SMA")
 
-
     def get_warmup_window(self) -> int:
         return self.window
 
-
     def _get_settings(self) -> list:
         return [self.window, self.price]
-    
 
     def compute(self):
         values = self.historical.bar_data[:, :, self.price]
@@ -31,6 +28,9 @@ class SMA(Indicator):
         csum = np.nancumsum(values, axis=1)
 
         # Correct: first valid SMA at index w-1
-        out[:, w-1:] = (csum[:, w-1:] - np.pad(csum[:, :-w], ((0,0),(1,0)), 'constant')) / w
+        out[:, w - 1 :] = (
+            csum[:, w - 1 :]
+            - np.pad(csum[:, :-w], ((0, 0), (1, 0)), "constant")
+        ) / w
 
         self.indicator_data[:, self.key, :] = out

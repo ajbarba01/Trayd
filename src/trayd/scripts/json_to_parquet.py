@@ -4,9 +4,9 @@ import pandas as pd
 from pathlib import Path
 
 # ---------------- CONFIG ----------------
-INPUT_DIR = Path("json_data")        # directory containing *.json
-OUTPUT_DIR = Path("parquet_data")    # output directory
-SYMBOLS = {"AAPL", "MSFT", "GOOG"}    # symbols to convert
+INPUT_DIR = Path("json_data")  # directory containing *.json
+OUTPUT_DIR = Path("parquet_data")  # output directory
+SYMBOLS = {"AAPL", "MSFT", "GOOG"}  # symbols to convert
 # ---------------------------------------
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -28,11 +28,7 @@ for file in INPUT_DIR.glob("*.json"):
     data = raw[symbol]
 
     # Build DataFrame
-    df = pd.DataFrame.from_dict(
-        data,
-        orient="index",
-        columns=COLUMNS
-    )
+    df = pd.DataFrame.from_dict(data, orient="index", columns=COLUMNS)
 
     # Convert index to datetime (keeps minute resolution)
     df.index = pd.to_datetime(df.index)
@@ -48,14 +44,16 @@ for file in INPUT_DIR.glob("*.json"):
     df = df[["Open", "High", "Low", "Close", "Adj Close", "Volume"]]
 
     # Enforce dtypes
-    df = df.astype({
-        "Open": "float64",
-        "High": "float64",
-        "Low": "float64",
-        "Close": "float64",
-        "Adj Close": "float64",
-        "Volume": "int64"
-    })
+    df = df.astype(
+        {
+            "Open": "float64",
+            "High": "float64",
+            "Low": "float64",
+            "Close": "float64",
+            "Adj Close": "float64",
+            "Volume": "int64",
+        }
+    )
 
     # Write parquet
     out_path = OUTPUT_DIR / f"{symbol}.parquet"

@@ -16,10 +16,10 @@ class YFDownloader(ParquetDownloader):
     def __init__(self, cache_path, data_dir):
         super().__init__(cache_path, data_dir, Granularity.DAY)
 
-
     def download_all(self, symbols: list[str], start_date: str, end_date: str):
-        if self.granularity == Granularity.INTRADAY: return
-        
+        if self.granularity == Granularity.INTRADAY:
+            return
+
         if not symbols:
             return
 
@@ -40,10 +40,13 @@ class YFDownloader(ParquetDownloader):
                 progress=False,
             )
 
-
         for symbol in symbols:
             # Extract symbol DataFrame
-            sym_df_new: pd.DataFrame = df_new[symbol] if isinstance(df_new.columns, pd.MultiIndex) else df_new
+            sym_df_new: pd.DataFrame = (
+                df_new[symbol]
+                if isinstance(df_new.columns, pd.MultiIndex)
+                else df_new
+            )
             sym_df_new = sym_df_new.dropna(how="all")
 
             if sym_df_new.empty:

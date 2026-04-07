@@ -2,7 +2,6 @@ from trayd.data import MarketCapDownloader
 from trayd.index import SP100, SP500
 from trayd.util import get_path
 
-
 START = "2000-01-01"
 END = "2026-01-19"
 

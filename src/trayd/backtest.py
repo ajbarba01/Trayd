@@ -1,6 +1,7 @@
+import time
+
 import matplotlib.pyplot as plt
 import pandas as pd
-import time
 
 from .portfolio import Portfolio
 from .report import Report
@@ -166,7 +167,10 @@ class Backtest:
     def _new_day(self):
         # Sync daily data to intraday date
         if self.using_intraday:
-            while self.daily.current_ts.normalize() < self.historical.current_ts.normalize():
+            while (
+                self.daily.current_ts.normalize()
+                < self.historical.current_ts.normalize()
+            ):
                 self.daily.next()
 
         ts = self._current_ts()

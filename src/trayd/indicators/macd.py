@@ -7,11 +7,7 @@ from trayd.data import OHLCV
 
 class MACDHistogram(Indicator):
     def __init__(
-        self,
-        fast: int = 12,
-        slow: int = 26,
-        signal: int = 9,
-        price=OHLCV.CLOSE
+        self, fast: int = 12, slow: int = 26, signal: int = 9, price=OHLCV.CLOSE
     ):
         self.fast = fast
         self.slow = slow
@@ -23,7 +19,9 @@ class MACDHistogram(Indicator):
     def get_prereqs(self) -> list:
         # Add MACD and MACDSignal with the same parameters
         macd = MACD(fast=self.fast, slow=self.slow, price=self.price)
-        macd_signal = MACDSignal(macd_fast=self.fast, macd_slow=self.slow, signal=self.signal)
+        macd_signal = MACDSignal(
+            macd_fast=self.fast, macd_slow=self.slow, signal=self.signal
+        )
         return [macd, macd_signal]
 
     def get_warmup_window(self) -> int:
@@ -41,11 +39,12 @@ class MACDHistogram(Indicator):
         # Histogram = MACD - MACDSignal
         self.indicator_data[:, self.key, :] = macd_values - signal_values
 
-
-    def just_crossed_bullish(self, symbol: str, offset: int = 0, only_above: float = 0.0):
+    def just_crossed_bullish(
+        self, symbol: str, offset: int = 0, only_above: float = 0.0
+    ):
         macd = self.dependencies[0]
         signal = self.dependencies[1]
-        
+
         curr_macd = macd.get(symbol, offset)
         curr_signal = signal.get(symbol, offset)
 
@@ -57,9 +56,10 @@ class MACDHistogram(Indicator):
         just_crossed_bullish = above_line and just_crossed
 
         return just_crossed_bullish
-    
 
-    def just_crossed_bearish(self, symbol: str, offset: int = 0, only_below: float = 0.0):
+    def just_crossed_bearish(
+        self, symbol: str, offset: int = 0, only_below: float = 0.0
+    ):
         macd = self.dependencies[0]
         signal = self.dependencies[1]
 
@@ -75,7 +75,6 @@ class MACDHistogram(Indicator):
         just_crossed_bearish = below_line and just_crossed
 
         return just_crossed_bearish
-    
 
     def just_exited_bullish(self, symbol: str, offset: int = 0):
         macd = self.dependencies[0]
@@ -95,10 +94,7 @@ class MACDHistogram(Indicator):
 
 class MACD(Indicator):
     def __init__(
-        self,
-        fast: int = 12,
-        slow: int = 26,
-        price: OHLCV = OHLCV.CLOSE
+        self, fast: int = 12, slow: int = 26, price: OHLCV = OHLCV.CLOSE
     ):
         self.fast = fast
         self.slow = slow
@@ -110,18 +106,14 @@ class MACD(Indicator):
 
         super().__init__("MACD")
 
-
     def get_prereqs(self) -> list:
         return [self.ema_fast, self.ema_slow]
-
 
     def get_warmup_window(self) -> int:
         return max(self.fast, self.slow)
 
-
     def _get_settings(self) -> list:
         return [self.fast, self.slow, self.price]
-
 
     def compute(self):
         ema_fast = self.indicator_data[:, self.ema_fast.key, :]
@@ -130,13 +122,9 @@ class MACD(Indicator):
         self.indicator_data[:, self.key, :] = ema_fast - ema_slow
 
 
-
 class MACDSignal(Indicator):
     def __init__(
-        self,
-        macd_fast: int = 12,
-        macd_slow: int = 26,
-        signal: int = 9
+        self, macd_fast: int = 12, macd_slow: int = 26, signal: int = 9
     ):
         self.macd_fast = macd_fast
         self.macd_slow = macd_slow
@@ -163,7 +151,10 @@ class MACDSignal(Indicator):
     MACD Signal line indicator — computes the EMA of the MACD values.
     Handles NaNs at the start and ensures proper warmup.
     """
-    def __init__(self, macd_fast: int = 12, macd_slow: int = 26, signal: int = 9):
+
+    def __init__(
+        self, macd_fast: int = 12, macd_slow: int = 26, signal: int = 9
+    ):
         self.macd_fast = macd_fast
         self.macd_slow = macd_slow
         self.signal = signal
@@ -198,7 +189,9 @@ class MACDSignal(Indicator):
 
             start = valid_idx[0] + self.signal - 1
             # Initialize SMA over first 'signal' valid MACD bars
-            signal_line[s, start] = np.nanmean(macd_values[s, valid_idx[0]:valid_idx[0] + self.signal])
+            signal_line[s, start] = np.nanmean(
+                macd_values[s, valid_idx[0] : valid_idx[0] + self.signal]
+            )
 
             # Recursive EMA
             for t in range(start + 1, num_timestamps):
@@ -206,7 +199,10 @@ class MACDSignal(Indicator):
                     # If MACD missing, carry previous EMA forward
                     signal_line[s, t] = signal_line[s, t - 1]
                 else:
-                    signal_line[s, t] = alpha * macd_values[s, t] + (1 - alpha) * signal_line[s, t - 1]
+                    signal_line[s, t] = (
+                        alpha * macd_values[s, t]
+                        + (1 - alpha) * signal_line[s, t - 1]
+                    )
 
         # Store in indicator data
         self.indicator_data[:, self.key, :] = signal_line

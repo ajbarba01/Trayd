@@ -1,4 +1,3 @@
-
 start = 40_000
 avg_return_percent = 150
 days_per_return = 365
@@ -20,7 +19,7 @@ for i in range(num_days):
 
     if contribution != 0 and i % contribution == 0:
         curr += contribution
-    
+
 #     if i % 10 == 0:
 #         print(f"Day {i}: {curr}")
 

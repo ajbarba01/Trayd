@@ -11,14 +11,11 @@ class RSI(Indicator):
         self.price = price
         super().__init__("RSI")
 
-
     def get_warmup_window(self) -> int:
         return self.period
 
-
     def _get_settings(self) -> list:
         return [self.period, self.price]
-
 
     def compute(self):
         prices = self.historical.bar_data[:, :, self.price]
@@ -38,8 +35,12 @@ class RSI(Indicator):
         avg_loss[:, p] = np.nanmean(losses[:, :p], axis=1)
 
         for t in range(p + 1, n_ts):
-            avg_gain[:, t] = (avg_gain[:, t-1] * (p - 1) + gains[:, t-1]) / p
-            avg_loss[:, t] = (avg_loss[:, t-1] * (p - 1) + losses[:, t-1]) / p
+            avg_gain[:, t] = (
+                avg_gain[:, t - 1] * (p - 1) + gains[:, t - 1]
+            ) / p
+            avg_loss[:, t] = (
+                avg_loss[:, t - 1] * (p - 1) + losses[:, t - 1]
+            ) / p
 
         # Compute RSI safely
         rs = np.full((n_symbols, n_ts), np.nan)

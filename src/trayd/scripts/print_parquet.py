@@ -1,6 +1,7 @@
 import pandas as pd
 import sys
 
+
 def print_parquet_preview(path: str, n: int = 5):
     # Load the file
     df = pd.read_parquet(path)
@@ -16,6 +17,7 @@ def print_parquet_preview(path: str, n: int = 5):
 
     print(f"\nLast {n} rows:")
     print(df.tail(n))
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

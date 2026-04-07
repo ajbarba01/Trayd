@@ -3,6 +3,7 @@ import pandas as pd
 
 from trayd.util import get_path
 
+
 class ParquetLoader:
     def __init__(self, cache_path: str, data_path: str):
         self.cache_path = cache_path
@@ -12,10 +13,10 @@ class ParquetLoader:
     def get_path(self, symbol: str) -> str:
         """Return the full path to a symbol's Parquet file."""
         return get_path(self.data_path, f"{symbol}.parquet")
-    
+
     def has_path(self, symbol: str) -> bool:
         return os.path.exists(self.get_path(symbol))
-    
+
     def load_symbol(self, symbol: str) -> pd.DataFrame:
         """Load a single symbol's Parquet file into memory and cache it."""
         if symbol in self.data:
@@ -23,13 +24,17 @@ class ParquetLoader:
 
         file_path = self.get_path(symbol)
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Parquet file for {symbol} not found at {file_path}")
+            raise FileNotFoundError(
+                f"Parquet file for {symbol} not found at {file_path}"
+            )
 
         df = pd.read_parquet(file_path)
         self.data[symbol] = df
         return df
 
-    def load_all(self, symbols: list[str], start_date: str = None, end_date: str = None):
+    def load_all(
+        self, symbols: list[str], start_date: str = None, end_date: str = None
+    ):
         """Load multiple symbols into memory and optionally filter by date range."""
         for symbol in symbols:
             df = self.load_symbol(symbol)
@@ -43,10 +48,7 @@ class ParquetLoader:
             self.data[symbol] = df
 
     def load_all_dated(
-        self,
-        symbols: list[str],
-        start_date: str = None,
-        end_date: str = None
+        self, symbols: list[str], start_date: str = None, end_date: str = None
     ) -> dict[str, dict[pd.Timestamp, dict]]:
         """
         Load multiple symbols and return:
@@ -55,8 +57,8 @@ class ParquetLoader:
         dated_data: dict[str, dict[pd.Timestamp, dict]] = {}
 
         start_dt = pd.to_datetime(start_date) if start_date else None
-        end_dt   = pd.to_datetime(end_date) if end_date else None
-            
+        end_dt = pd.to_datetime(end_date) if end_date else None
+
         failed = 0
         for symbol in symbols:
             if not self.has_path(symbol):
@@ -82,19 +84,18 @@ class ParquetLoader:
                 df = df.drop(columns=["symbol"])
 
             # FINAL STRUCTURE
-            dated_data[symbol] = dict(
-                zip(df.index, df.to_dict("records"))
-            )
+            dated_data[symbol] = dict(zip(df.index, df.to_dict("records")))
 
         print(f"{failed} symbols failed to load.")
         return dated_data
 
-
     def get_data(self, symbol: str):
         """Retrieve data from memory cache. Raises error if not loaded."""
         if symbol not in self.data:
-            raise KeyError(f"{symbol} not loaded. Call load_symbol or load_all first.")
+            raise KeyError(
+                f"{symbol} not loaded. Call load_symbol or load_all first."
+            )
         return self.data[symbol]
-    
+
     def has_data(self, symbol: str) -> bool:
         return symbol in self.data

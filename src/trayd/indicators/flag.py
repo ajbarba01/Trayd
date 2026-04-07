@@ -26,7 +26,7 @@ class Flag(Indicator):
 
     def compute(self):
         highs = self.historical.bar_data[:, :, OHLCV.HIGH]
-        lows  = self.historical.bar_data[:, :, OHLCV.LOW]
+        lows = self.historical.bar_data[:, :, OHLCV.LOW]
 
         num_symbols, num_timestamps = highs.shape
         out = np.full((num_symbols, num_timestamps), np.nan, dtype=np.float64)
@@ -36,7 +36,7 @@ class Flag(Indicator):
         for t in range(w, num_timestamps):
             # window+1 bars → window pct diffs
             h_slice = highs[:, t - w : t + 1]
-            l_slice = lows[:,  t - w : t + 1]
+            l_slice = lows[:, t - w : t + 1]
 
             # Percentage differences
             h_prev = h_slice[:, :-1]
@@ -49,7 +49,9 @@ class Flag(Indicator):
             h_std = np.nanstd(h_diff, axis=1)
             l_std = np.nanstd(l_diff, axis=1)
 
-            valid = (h_std <= self.std_threshold) & (l_std <= self.std_threshold)
+            valid = (h_std <= self.std_threshold) & (
+                l_std <= self.std_threshold
+            )
 
             if not np.any(valid):
                 continue
@@ -60,10 +62,10 @@ class Flag(Indicator):
 
             # Direction + magnitude checks
             valid &= (
-                (h_slope < 0) &                       # highs trending down
-                (l_slope > 0) &                       # lows trending up
-                (np.abs(h_slope) <= self.slope_threshold) &
-                (np.abs(l_slope) <= self.slope_threshold)
+                (h_slope < 0)  # highs trending down
+                & (l_slope > 0)  # lows trending up
+                & (np.abs(h_slope) <= self.slope_threshold)
+                & (np.abs(l_slope) <= self.slope_threshold)
             )
 
             if not np.any(valid):

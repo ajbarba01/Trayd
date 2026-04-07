@@ -1,7 +1,21 @@
 from .algorithm import Algorithm
 
 from trayd.data import OHLCV
-from trayd.indicators import SMA, TEST, ROC, RSI, EMA, ADX, OvernightGap, Breakout5, ATR, OCMA, BetaMA, RBC, MACDHistogram
+from trayd.indicators import (
+    SMA,
+    TEST,
+    ROC,
+    RSI,
+    EMA,
+    ADX,
+    OvernightGap,
+    Breakout5,
+    ATR,
+    OCMA,
+    BetaMA,
+    RBC,
+    MACDHistogram,
+)
 from trayd.util import Logger
 from trayd.index import Top50, SP500, SP100, Top25
 
@@ -18,19 +32,17 @@ class IntraShort(Algorithm):
 
         self.to_short_today = set()
 
-
     def on_start(self):
         self.index = self.add_index(Top50())
         self.roc = self.add_indicator(ROC(504))
         self.sma200 = self.add_indicator(SMA(200))
-        
+
         self.rsi = self.add_indicator(RSI(14), daily=False)
         self.macd = self.add_indicator(MACDHistogram(), daily=False)
         self.atr = self.add_indicator(ATR(14), daily=False)
         self.adx = self.add_indicator(ADX(5), daily=False)
 
         self.set_default_atr(self.atr)
-
 
     def new_day(self):
         return
@@ -42,12 +54,19 @@ class IntraShort(Algorithm):
             if self.high_break.is_five_bar_high(symbol):
                 self.to_short_today.add(symbol)
 
-        if not self.get_close("SPY") > self.sma200.get("SPY"): return
-        if not self.get_close("OEF") > self.sma200.get("OEF"): return
+        if not self.get_close("SPY") > self.sma200.get("SPY"):
+            return
+        if not self.get_close("OEF") > self.sma200.get("OEF"):
+            return
         # if not self.get_close("IWM") > self.sma200.get("IWM"): return
 
-        self.to_short_today = set([symbol for symbol in self.to_short_today if not self.low_break.is_five_bar_low(symbol)])
-
+        self.to_short_today = set(
+            [
+                symbol
+                for symbol in self.to_short_today
+                if not self.low_break.is_five_bar_low(symbol)
+            ]
+        )
 
     def on_tick(self):
         time = self.time()
@@ -59,11 +78,11 @@ class IntraShort(Algorithm):
         if datetime.time(9, 30) < time < datetime.time(10, 20):
             self.short_crossover()
 
-
     def on_position_opened(self, position):
         # self.set_trailing_stop(position.symbol, self.atr)
-        self.set_static_stop_take(position.symbol, position.avg_fill_price, 1.5, 1)
-
+        self.set_static_stop_take(
+            position.symbol, position.avg_fill_price, 1.5, 1
+        )
 
     def short_crossover(self):
         symbols = self.index.get_valid_symbols()
@@ -81,7 +100,5 @@ class IntraShort(Algorithm):
             if self.macd.just_crossed_bearish(symbol) and oversold:
                 self.short_up_to(symbol)
 
-
             # if self.macd.just_crossed_bullish(symbol) and overbought:
             #     self.buy_up_to(symbol)
-

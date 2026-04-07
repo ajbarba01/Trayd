@@ -19,29 +19,31 @@ def build_index_from_registry_csv(index_name: str):
     out_delta_csv = get_path(output_dir, f"{index_name}_delta.csv")
     out_npz = get_path(output_dir, f"{index_name}_delta.npz")
 
-    df = pd.read_csv(snapshot_csv, parse_dates=['date'])
-    df = df.sort_values('date')
+    df = pd.read_csv(snapshot_csv, parse_dates=["date"])
+    df = df.sort_values("date")
 
     prev_symbols: set[str] = set()
     delta_rows = []
 
     # ---- Pass 1: build delta CSV (event days only) ----
     for _, row in df.iterrows():
-        date = pd.Timestamp(row['date']).normalize()
+        date = pd.Timestamp(row["date"]).normalize()
 
         symbols = set()
-        if pd.notna(row['tickers']) and row['tickers']:
-            symbols = {s.strip() for s in row['tickers'].split(",")}
+        if pd.notna(row["tickers"]) and row["tickers"]:
+            symbols = {s.strip() for s in row["tickers"].split(",")}
 
         added = sorted(symbols - prev_symbols)
         removed = sorted(prev_symbols - symbols)
 
         if added or removed:
-            delta_rows.append({
-                "date": date,
-                "added": "|".join(added),
-                "removed": "|".join(removed),
-            })
+            delta_rows.append(
+                {
+                    "date": date,
+                    "added": "|".join(added),
+                    "removed": "|".join(removed),
+                }
+            )
 
         # ⚠️ Always update prev_symbols
         prev_symbols = symbols
@@ -92,8 +94,8 @@ def build_index_from_registry_csv(index_name: str):
         symbol_list=np.array(symbols, dtype=object),
         symbol_start_dates=np.array(
             [symbol_starts.get(i, -1) for i in range(len(symbols))],
-            dtype=np.int64
-        )
+            dtype=np.int64,
+        ),
     )
 
     print("Build complete (event days only):")
@@ -151,7 +153,6 @@ def build_static_index_npz(
     print(f"  Start date: {start_date}")
 
 
-
 INPUT_JSON = "input.json"
 OUTPUT_CSV = "output.csv"
 
@@ -162,38 +163,40 @@ def convert_old_to_csv(index: str):
 
     with open(input_json, "r") as f:
         data: dict = json.load(f)
-    
+
     data.pop("start", None)
-    data = {timestamp: symbols for timestamp, symbols in data.items() if symbols != []}
+    data = {
+        timestamp: symbols
+        for timestamp, symbols in data.items()
+        if symbols != []
+    }
 
     with open(output_csv, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["date", "tickers"])
 
         for date, tickers in sorted(data.items()):
-            writer.writerow([
-                date,
-                ",".join(tickers)
-            ])
+            writer.writerow([date, ",".join(tickers)])
 
     print(f"Wrote {output_csv}")
 
 
 def top_n(index: str, n: int):
     top_n_data = {}
-    with open(index_data_path(f"{index}.json"), 'r') as fp:
+    with open(index_data_path(f"{index}.json"), "r") as fp:
         data = json.load(fp)
 
     for timestamp, symbols in data.items():
         top_n_data[timestamp] = symbols[:n]
 
-    with open(index_data_path(f"top_{n}.json"), 'w') as fp:
+    with open(index_data_path(f"top_{n}.json"), "w") as fp:
         json.dump(top_n_data, fp)
- 
+
 
 def convert_and_build(index: str):
     convert_old_to_csv(index)
     build_index_from_registry_csv(index)
+
 
 convert_and_build("top50_5yrs")
 # top_n("top50_5yrs", 25)

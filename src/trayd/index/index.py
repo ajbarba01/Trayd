@@ -12,8 +12,12 @@ class Index:
         self.index_start_date: pd.Timestamp | None = None
 
         # CSV file: symbol,start_date,end_date
-        self.index_data_path = get_path("index", "data", f"{self.index_name}_delta.npz")
-        self.index_data_path_npz = get_path("index", "data", f"{self.index_name}_delta.npz")
+        self.index_data_path = get_path(
+            "index", "data", f"{self.index_name}_delta.npz"
+        )
+        self.index_data_path_npz = get_path(
+            "index", "data", f"{self.index_name}_delta.npz"
+        )
         self.index_data: pd.DataFrame | None = None
 
         # Maps day -> list of symbols added or removed
@@ -34,7 +38,6 @@ class Index:
         self.num_ts: int = 0
         self.current_ts_idx: int = 0
 
-
     # --------------------------
     # Loading CSV and preprocessing
     # --------------------------
@@ -43,15 +46,21 @@ class Index:
         return
         start_date = pd.to_datetime(start_date_str).normalize()
         # Load CSV
-        self.index_data = pd.read_csv(self.index_data_path, parse_dates=['start_date', 'end_date'])
+        self.index_data = pd.read_csv(
+            self.index_data_path, parse_dates=["start_date", "end_date"]
+        )
 
         timestamps = set()
         first_timestamp = pd.Timestamp.now().normalize()
 
         for _, row in self.index_data.iterrows():
-            symbol = row['symbol']
-            start_ts = pd.Timestamp(row['start_date']).normalize()
-            end_ts = pd.Timestamp(row['end_date']).normalize() if pd.notna(row['end_date']) else None
+            symbol = row["symbol"]
+            start_ts = pd.Timestamp(row["start_date"]).normalize()
+            end_ts = (
+                pd.Timestamp(row["end_date"]).normalize()
+                if pd.notna(row["end_date"])
+                else None
+            )
 
             # Track all symbols
             self.all_symbols.append(symbol)
@@ -83,7 +92,6 @@ class Index:
 
         return self.index_start_date
 
-
     def load_all_npz(self, start_date_str: str) -> pd.Timestamp:
         start_date = pd.to_datetime(start_date_str).normalize()
         data = np.load(self.index_data_path_npz, allow_pickle=True)
@@ -91,31 +99,36 @@ class Index:
         # ------------------
         # Restore timestamps
         # ------------------
-        self.all_timestamps = [pd.Timestamp(ts, unit='ns') for ts in data['timestamps']]
+        self.all_timestamps = [
+            pd.Timestamp(ts, unit="ns") for ts in data["timestamps"]
+        ]
         self.num_ts = len(self.all_timestamps)
         self.current_ts_idx = 0
 
         # ------------------
         # Restore symbols
         # ------------------
-        symbol_list = list(data['symbol_list'])
+        symbol_list = list(data["symbol_list"])
         self.symbol_starts = {
-            symbol_list[i]: pd.Timestamp(ts, unit='ns')
-            for i, ts in enumerate(data['symbol_start_dates'])
+            symbol_list[i]: pd.Timestamp(ts, unit="ns")
+            for i, ts in enumerate(data["symbol_start_dates"])
             if ts != -1
         }
 
         # Build symbol end dates from removals
-        symbol_end_dates: dict[str, pd.Timestamp] = {s: pd.Timestamp.max for s in symbol_list}
-        for ts, sid in zip(data['rem_dates'], data['rem_symbols']):
-            day = pd.Timestamp(ts, unit='ns')
+        symbol_end_dates: dict[str, pd.Timestamp] = {
+            s: pd.Timestamp.max for s in symbol_list
+        }
+        for ts, sid in zip(data["rem_dates"], data["rem_symbols"]):
+            day = pd.Timestamp(ts, unit="ns")
             symbol_end_dates[symbol_list[sid]] = day
 
         # ------------------
         # all_symbols = any symbol active at start_date or after
         # ------------------
         self.all_symbols = [
-            sym for sym in symbol_list
+            sym
+            for sym in symbol_list
             if self.symbol_starts[sym] <= start_date < symbol_end_dates[sym]
             or self.symbol_starts[sym] >= start_date
         ]
@@ -125,11 +138,11 @@ class Index:
         # ------------------
         self.adds.clear()
         self.removals.clear()
-        for ts, sid in zip(data['adds_dates'], data['adds_symbols']):
-            day = pd.Timestamp(ts, unit='ns')
+        for ts, sid in zip(data["adds_dates"], data["adds_symbols"]):
+            day = pd.Timestamp(ts, unit="ns")
             self.adds.setdefault(day, []).append(symbol_list[sid])
-        for ts, sid in zip(data['rem_dates'], data['rem_symbols']):
-            day = pd.Timestamp(ts, unit='ns')
+        for ts, sid in zip(data["rem_dates"], data["rem_symbols"]):
+            day = pd.Timestamp(ts, unit="ns")
             self.removals.setdefault(day, []).append(symbol_list[sid])
 
         # ------------------
@@ -144,14 +157,11 @@ class Index:
 
         return self.index_start_date
 
-    
-
     def dump(self):
         print("TIMES:", self.all_timestamps)
         print("SYMBOL:", self.all_symbols)
         print("ADDS:", self.adds)
         print("REMOVALS:", self.removals)
-
 
     # --------------------------
     # Update current symbols to a specific date
@@ -159,7 +169,10 @@ class Index:
     def update_to(self, timestamp: pd.Timestamp):
         ts = pd.Timestamp(timestamp).normalize() - pd.Timedelta(days=1)
 
-        while self.current_ts_idx < self.num_ts and ts >= self.all_timestamps[self.current_ts_idx]:
+        while (
+            self.current_ts_idx < self.num_ts
+            and ts >= self.all_timestamps[self.current_ts_idx]
+        ):
             current_day = self.all_timestamps[self.current_ts_idx]
 
             # Add symbols
@@ -182,8 +195,11 @@ class Index:
         self.historical = historical
 
     def get_valid_symbols(self) -> list[str]:
-        return [s for s in self.all_symbols if s in self.current_symbols and self.historical.has_bar(s)]
-
+        return [
+            s
+            for s in self.all_symbols
+            if s in self.current_symbols and self.historical.has_bar(s)
+        ]
 
     def get_all_symbols(self) -> list[str]:
         return self.all_symbols

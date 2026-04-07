@@ -3,6 +3,7 @@
 cache/*
 temp/
 old/
+live/
 
 
 # Byte-compiled / optimized / DLL files

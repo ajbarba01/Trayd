@@ -18,12 +18,10 @@ class Arbitrage(Algorithm):
 
         self.portfolio_max_size = 7
 
-
     def on_start(self):
         self.index = self.add_index(SP100())
 
         self.rbc = self.add_indicator(RBC(90))
-
 
     def new_day(self):
         symbols = self.index.get_valid_symbols()
@@ -39,13 +37,8 @@ class Arbitrage(Algorithm):
 
         print(self.historical.current_ts, max_pair, max)
 
-
     def on_position_opened(self, position: Position):
         self.set_stop_take(position.symbol, position.avg_entry_price, 2, 2)
-            
-    
 
     def end(self):
         pass
-
-

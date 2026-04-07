@@ -51,9 +51,9 @@ class OvernightGap(Indicator):
             & (prev_atr > 0)
         )
 
-        raw[:, 1:][valid] = (
-            today_open[valid] - prev_close[valid]
-        ) / prev_atr[valid]
+        raw[:, 1:][valid] = (today_open[valid] - prev_close[valid]) / prev_atr[
+            valid
+        ]
 
         # Step 2: shift forward by one so algorithm reads it on the correct day
         out[:, 1:] = raw[:, :-1]

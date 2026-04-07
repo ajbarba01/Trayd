@@ -25,8 +25,13 @@ UNIT_MULTIPLIERS = {
     "billions": 1_000_000_000,
 }
 
+
 class SECScraper:
-    def __init__(self, user_agent: str = "Backtester alex@Barba.org", min_delay: float = 0.1):
+    def __init__(
+        self,
+        user_agent: str = "Backtester alex@Barba.org",
+        min_delay: float = 0.1,
+    ):
         """
         min_delay: minimum delay (in seconds) between SEC requests
         """
@@ -37,10 +42,8 @@ class SECScraper:
         self.mapper = StockMapper()
         self.ticker_to_cik = self.mapper.ticker_to_cik  # dict: {ticker: cik}
 
-        
     def get_cik(self, symbol: str) -> str | None:
         return self.ticker_to_cik.get(symbol.upper())
-    
 
     def _rate_limited_get(self, url: str) -> requests.Response:
         """Thread-safe requests.get with minimum delay between calls"""
@@ -59,8 +62,14 @@ class SECScraper:
             url = "https://www.sec.gov" + url
         return url
 
-    def get_filing_urls(self, cik: str, filing_type: str = "10-Q",
-                        start_date: str = "2000-01-01", end_date: str = "2030-12-31", count: int = 100):
+    def get_filing_urls(
+        self,
+        cik: str,
+        filing_type: str = "10-Q",
+        start_date: str = "2000-01-01",
+        end_date: str = "2030-12-31",
+        count: int = 100,
+    ):
         """Returns a dict {filing_date: filing_url} within the date range"""
         search_url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={cik}&type={filing_type}&owner=exclude&count={count}"
         response = self._rate_limited_get(search_url)
@@ -87,10 +96,10 @@ class SECScraper:
             if start_dt <= filing_dt <= end_dt:
                 link_tag = cells[1].find("a")
                 if link_tag and "href" in link_tag.attrs:
-                    filing_url = "https://www.sec.gov" + link_tag['href']
+                    filing_url = "https://www.sec.gov" + link_tag["href"]
                     urls[filing_dt] = filing_url
         return urls
-    
+
     def get_complete_submission_txt(self, filing_url: str) -> str | None:
         filing_url = self.normalize_sec_url(filing_url)
         response = self._rate_limited_get(filing_url)
@@ -108,10 +117,12 @@ class SECScraper:
                 continue
 
             # Look for the correct row by label text
-            description_text = " ".join(c.get_text(strip=True) for c in cells).lower()
+            description_text = " ".join(
+                c.get_text(strip=True) for c in cells
+            ).lower()
             if "complete submission text file" not in description_text:
                 continue
-                
+
             # Find the first <a> tag inside this row
             link_tag = row.find("a", href=True)
             if link_tag:
@@ -132,7 +143,7 @@ class SECScraper:
 
         tag = soup.find(
             "ix:nonfraction",
-            attrs={"name": "dei:EntityCommonStockSharesOutstanding"}
+            attrs={"name": "dei:EntityCommonStockSharesOutstanding"},
         )
 
         if not tag:
@@ -154,7 +165,7 @@ class SECScraper:
             try:
                 scale_int = int(scale)
                 if scale_int < 12:
-                    multiplier = 10 ** scale_int
+                    multiplier = 10**scale_int
             except ValueError:
                 pass
 
@@ -169,8 +180,6 @@ class SECScraper:
 
         value *= multiplier
         return int(round(value))
-
-    
 
     def extract_shares_from_text(self, url: str) -> int | None:
         response = self._rate_limited_get(url)
@@ -189,7 +198,7 @@ class SECScraper:
 
             # Look nearby for units (±200 chars window)
             start, end = match.span()
-            window = text[max(0, start - 200): min(len(text), end + 200)]
+            window = text[max(0, start - 200) : min(len(text), end + 200)]
             print(window)
 
             multiplier = 1
@@ -214,11 +223,16 @@ class SECScraper:
             shares = self.extract_shares_from_text(txt_url)
             if shares is not None:
                 return shares
-            
+
         return None
 
-    def get_shares_in_date_range(self, symbol: str, filing_type: str = "10-Q",
-                                start_date: str = "2000-01-01", end_date: str = "2030-12-31") -> dict:
+    def get_shares_in_date_range(
+        self,
+        symbol: str,
+        filing_type: str = "10-Q",
+        start_date: str = "2000-01-01",
+        end_date: str = "2030-12-31",
+    ) -> dict:
         """
         Fetch filings in the date range, extract shares outstanding.
         Returns dict: {"YYYY-MM-DD": shares}.

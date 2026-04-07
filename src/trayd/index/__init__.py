@@ -4,5 +4,4 @@ from .sp_500 import SP500
 from .sp_100 import SP100
 from .sp_50 import SP50
 from .just_spy import JustSpy
-from.index import Index
-
+from .index import Index

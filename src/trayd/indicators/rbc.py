@@ -7,10 +7,7 @@ import numpy as np
 
 class RBC(Indicator):
     def __init__(
-        self,
-        window: int,
-        price: OHLCV = OHLCV.CLOSE,
-        log_returns: bool = True
+        self, window: int, price: OHLCV = OHLCV.CLOSE, log_returns: bool = True
     ):
         self.window = window
         self.price = price
@@ -18,15 +15,12 @@ class RBC(Indicator):
 
         super().__init__("RollingBetaCorr")
 
-
     def get_warmup_window(self) -> int:
         # returns need one extra bar
         return self.window + 1
 
-
     def _get_settings(self) -> list:
         return [self.window, self.price, self.log_returns]
-
 
     def compute(self):
         """
@@ -35,8 +29,9 @@ class RBC(Indicator):
         """
         return
 
-
-    def _get_aligned_returns(self, a_idx: int, b_idx: int) -> tuple[np.ndarray, np.ndarray]:
+    def _get_aligned_returns(
+        self, a_idx: int, b_idx: int
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Returns aligned return series for two symbols.
         If alignment is impossible, returns (empty, empty).
@@ -44,16 +39,8 @@ class RBC(Indicator):
         t = self.historical.current_ts_idx
         w = self.window
 
-        prices_a = self.historical.bar_data[
-            a_idx,
-            t - w : t + 1,
-            self.price
-        ]
-        prices_b = self.historical.bar_data[
-            b_idx,
-            t - w : t + 1,
-            self.price
-        ]
+        prices_a = self.historical.bar_data[a_idx, t - w : t + 1, self.price]
+        prices_b = self.historical.bar_data[b_idx, t - w : t + 1, self.price]
 
         # Require both assets to have prices on the same timestamps
         valid = ~np.isnan(prices_a) & ~np.isnan(prices_b)
@@ -74,7 +61,6 @@ class RBC(Indicator):
 
         return r_a, r_b
 
-
     def get_beta(self, asset: str, reference: str) -> float:
         if asset == reference:
             return 1.0
@@ -93,7 +79,6 @@ class RBC(Indicator):
 
         cov = np.cov(r_a, r_m, ddof=1)[0, 1]
         return cov / var_m
-
 
     def get_corr(self, first: str, second: str) -> float:
         if first == second:

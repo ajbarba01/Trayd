@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
+
 @dataclass
 class Position:
     symbol: str
@@ -37,7 +38,7 @@ class Portfolio:
         leverage: float = 1.0,
         margin_interest_rate: float = 0.0625,
         margin_maintenance: float = 0.3,
-        max_exposure: float = 1.0
+        max_exposure: float = 1.0,
     ):
         self.historical = historical
         self.using_intraday = using_intraday
@@ -83,12 +84,13 @@ class Portfolio:
 
         self.symbol_profits: dict[str, float] = {}
 
-
     def next(self):
         self.just_closed.clear()
         self.just_opened.clear()
 
-        if not self.using_intraday or is_intraday(self.historical.current_ts.time()):
+        if not self.using_intraday or is_intraday(
+            self.historical.current_ts.time()
+        ):
             for order in self.pending_orders.values():
                 self._apply_exec(order)
 
@@ -102,10 +104,8 @@ class Portfolio:
 
         self._check_margin_call()
 
-
     def new_month(self):
         pass
-
 
     def new_day(self):
         self.apply_margin_interest()
@@ -113,22 +113,17 @@ class Portfolio:
         self.equitys.append(self.equity)
         self.last_equity = self.equity
 
-
     def get_positions(self):
         return self.positions
-    
 
     def has_position(self, symbol: str) -> bool:
         return symbol in self.positions
-    
-    
+
     def get_position(self, symbol: str):
         return self.positions[symbol]
-    
 
     def get_allowance(self):
         return self.buying_power - self.reserved_value
-
 
     def _refresh_portfolio_values(self):
         long_value = 0.0
@@ -138,13 +133,12 @@ class Portfolio:
             symbol = position.symbol
             if self.historical.has_bar(symbol):
                 position.last_known_price = self.historical.get_close(symbol)
-            
+
             value = position.shares * position.last_known_price
             if position.short:
                 short_value += value
             else:
                 long_value += value
-
 
         self.long_value = long_value
         self.short_value = short_value
@@ -154,7 +148,6 @@ class Portfolio:
         self.equity = self.cash + self.held_value
         self.max_position_value = self.equity * self.max_exposure
         self.buying_power = self.max_position_value - self.gross_value
-
 
     def _apply_exec(self, order: Order) -> bool:
         if order.short:
@@ -170,24 +163,28 @@ class Portfolio:
 
         return False
 
-
     def _exec_buy(self, order: Order):
         symbol = order.symbol
-        if not self.historical.has_bar(symbol): return
-        price = upwards_slippage(self.slippage_percent, self.historical.get_open(symbol))
+        if not self.historical.has_bar(symbol):
+            return
+        price = upwards_slippage(
+            self.slippage_percent, self.historical.get_open(symbol)
+        )
 
         cost = order.shares * price
 
         if cost > self.buying_power:
             # Logger.log_error(f"Not enough buying power to buy {symbol}")
             return False
-        
+
         if self.gross_value + cost >= self.max_position_value:
             return False
 
         self.cash -= cost
         self.buying_power -= cost
-        self.total_slippage += (price - order.reference_price) * abs(order.shares)
+        self.total_slippage += (price - order.reference_price) * abs(
+            order.shares
+        )
 
         existing = self.positions.get(symbol)
 
@@ -198,7 +195,7 @@ class Portfolio:
                 False,
                 price,
                 price,
-                self.historical.current_ts
+                self.historical.current_ts,
             )
             self.positions[symbol] = pos
             self.just_opened.append(pos)
@@ -210,15 +207,12 @@ class Portfolio:
 
         new_shares = existing.shares + order.shares
 
-        existing.avg_entry_price = (
-            (total_old + total_add) / new_shares
-        )
+        existing.avg_entry_price = (total_old + total_add) / new_shares
 
         existing.shares = new_shares
         existing.last_known_price = price
 
         return True
-    
 
     def _exec_sell(self, order: Order):
         symbol = order.symbol
@@ -227,16 +221,18 @@ class Portfolio:
         if existing is None:
             # Logger.log_error(f"Tried to sell {symbol} but no position")
             return False
-        
+
         if not self.historical.has_bar(symbol):
             price = existing.last_known_price
         else:
             price = self.historical.get_open(symbol)
-        
+
         price = downwards_slippage(self.slippage_percent, price)
 
         if not np.isnan(order.reference_price):
-            self.total_slippage += (order.reference_price - price) * abs(order.shares)
+            self.total_slippage += (order.reference_price - price) * abs(
+                order.shares
+            )
 
         sell_shares = abs(order.shares)
 
@@ -255,7 +251,6 @@ class Portfolio:
         else:
             self.symbol_profits[symbol] += profit
 
-
         if remaining == 0:
             self.num_trades += 1
             existing.avg_fill_price = price
@@ -271,14 +266,15 @@ class Portfolio:
         existing.last_known_price = price
 
         return True
-    
 
     def _exec_short(self, order: Order):
         symbol = order.symbol
         if not self.historical.has_bar(symbol):
             return False
 
-        price = downwards_slippage(self.slippage_percent, self.historical.get_open(symbol))
+        price = downwards_slippage(
+            self.slippage_percent, self.historical.get_open(symbol)
+        )
         shares = abs(order.shares)
         proceeds = shares * price
 
@@ -301,7 +297,7 @@ class Portfolio:
                 short=True,
                 avg_entry_price=price,
                 last_known_price=price,
-                entry_time=self.historical.current_ts
+                entry_time=self.historical.current_ts,
             )
             self.positions[symbol] = pos
             self.just_opened.append(pos)
@@ -318,7 +314,6 @@ class Portfolio:
 
         return True
 
-        
     def _exec_buyback(self, order: Order):
         symbol = order.symbol
         pos = self.positions.get(symbol)
@@ -331,7 +326,9 @@ class Portfolio:
             price = self.historical.get_open(symbol)
 
         price = upwards_slippage(self.slippage_percent, price)
-        self.total_slippage += (price - order.reference_price) * abs(order.shares)
+        self.total_slippage += (price - order.reference_price) * abs(
+            order.shares
+        )
 
         shares = abs(order.shares)
         cost = shares * price
@@ -340,7 +337,9 @@ class Portfolio:
 
         self.cash -= cost
         profit = shares * (pos.avg_entry_price - price)
-        self.symbol_profits[symbol] = self.symbol_profits.get(symbol, 0) + profit
+        self.symbol_profits[symbol] = (
+            self.symbol_profits.get(symbol, 0) + profit
+        )
 
         pos.shares -= shares
         pos.last_known_price = price
@@ -354,7 +353,6 @@ class Portfolio:
 
         return True
 
-
     def place_order(self, symbol: str, shares: int, short=False):
         if symbol in self.pending_orders:
             # Logger.log_error(f"Tried to double place order for {symbol}")
@@ -365,18 +363,12 @@ class Portfolio:
 
         ref_price = self.historical.get_close(symbol)
 
-        self.pending_orders[symbol] = Order(
-            symbol,
-            shares,
-            short,
-            ref_price
-        )
+        self.pending_orders[symbol] = Order(symbol, shares, short, ref_price)
 
         if shares > 0 or (short and shares < 0):
             self.reserved_value += abs(shares) * ref_price
 
         return True
-    
 
     def close_position(self, symbol: str):
         if symbol not in self.positions:
@@ -388,12 +380,10 @@ class Portfolio:
         else:
             self.place_order(symbol, -pos.shares)
 
-
     def _check_delisted(self):
         for symbol in self.historical.get_delisted():
             # Logger.log_message(f"Force closed delisted symbol {symbol}: {self.historical.current_ts}")
             self.close_position(symbol)
-    
 
     def _check_stops_takes(self):
         for symbol, (atr, k_val) in self.trailing_stops.items():
@@ -415,29 +405,39 @@ class Portfolio:
             close = self.historical.get_close(symbol)
 
             if not pos.short:
-                if symbol in self.take_profits and close > self.take_profits[symbol]:
+                if (
+                    symbol in self.take_profits
+                    and close > self.take_profits[symbol]
+                ):
                     self.close_position(symbol)
-                elif symbol in self.stop_losses and close < self.stop_losses[symbol]:
+                elif (
+                    symbol in self.stop_losses
+                    and close < self.stop_losses[symbol]
+                ):
                     self.close_position(symbol)
             else:
-                if symbol in self.take_profits and close < self.take_profits[symbol]:
+                if (
+                    symbol in self.take_profits
+                    and close < self.take_profits[symbol]
+                ):
                     self.close_position(symbol)
-                elif symbol in self.stop_losses and close > self.stop_losses[symbol]:
+                elif (
+                    symbol in self.stop_losses
+                    and close > self.stop_losses[symbol]
+                ):
                     self.close_position(symbol)
-    
 
     def set_take_profit(self, symbol: str, target: float):
         self.take_profits[symbol] = target
 
-
     def set_stop_loss(self, symbol: str, limit: float):
         self.stop_losses[symbol] = limit
 
-
     def set_trailing_stop(self, symbol: str, atr, k_val: float):
         self.trailing_stops[symbol] = (atr, k_val)
-        self.stop_losses[symbol] = self.historical.get_close(symbol) - atr.get(symbol) * k_val
-
+        self.stop_losses[symbol] = (
+            self.historical.get_close(symbol) - atr.get(symbol) * k_val
+        )
 
     def _check_margin_call(self):
         return
@@ -452,7 +452,7 @@ class Portfolio:
                 f"MARGIN CALL! Equity {equity:,.2f} below "
                 f"maintenance margin {required:,.2f}"
             )
-    
+
     def apply_margin_interest(self):
         daily_rate = self.margin_interest_rate / 360
 

@@ -40,13 +40,15 @@ class ADX(Indicator):
 
         tr = np.zeros((n_symbols, n_ts))
         tr[:, 1:] = np.nanmax(
-            np.stack([
-                high[:, 1:] - low[:, 1:],
-                np.abs(high[:, 1:] - close[:, :-1]),
-                np.abs(low[:, 1:] - close[:, :-1])
-            ]),
+            np.stack(
+                [
+                    high[:, 1:] - low[:, 1:],
+                    np.abs(high[:, 1:] - close[:, :-1]),
+                    np.abs(low[:, 1:] - close[:, :-1]),
+                ]
+            ),
             axis=0,
-            initial=0  # <- prevents all-NaN warnings
+            initial=0,  # <- prevents all-NaN warnings
         )
 
         # ----------------------------
@@ -57,14 +59,18 @@ class ADX(Indicator):
         minus_sm = np.full((n_symbols, n_ts), np.nan)
 
         # Seed smoothing with sum of first p periods
-        atr[:, p] = np.nansum(tr[:, 1:p+1], axis=1)
-        plus_sm[:, p] = np.nansum(plus_dm[:, 1:p+1], axis=1)
-        minus_sm[:, p] = np.nansum(minus_dm[:, 1:p+1], axis=1)
+        atr[:, p] = np.nansum(tr[:, 1 : p + 1], axis=1)
+        plus_sm[:, p] = np.nansum(plus_dm[:, 1 : p + 1], axis=1)
+        minus_sm[:, p] = np.nansum(minus_dm[:, 1 : p + 1], axis=1)
 
         for t in range(p + 1, n_ts):
-            atr[:, t] = atr[:, t-1] - (atr[:, t-1] / p) + tr[:, t]
-            plus_sm[:, t] = plus_sm[:, t-1] - (plus_sm[:, t-1] / p) + plus_dm[:, t]
-            minus_sm[:, t] = minus_sm[:, t-1] - (minus_sm[:, t-1] / p) + minus_dm[:, t]
+            atr[:, t] = atr[:, t - 1] - (atr[:, t - 1] / p) + tr[:, t]
+            plus_sm[:, t] = (
+                plus_sm[:, t - 1] - (plus_sm[:, t - 1] / p) + plus_dm[:, t]
+            )
+            minus_sm[:, t] = (
+                minus_sm[:, t - 1] - (minus_sm[:, t - 1] / p) + minus_dm[:, t]
+            )
 
         # ----------------------------
         # DI and DX (safe)
@@ -84,14 +90,14 @@ class ADX(Indicator):
         # ----------------------------
         adx = np.full((n_symbols, n_ts), np.nan)
 
-        slice_dx = dx[:, p+1:2*p+1]
+        slice_dx = dx[:, p + 1 : 2 * p + 1]
         adx[:, 2 * p] = np.where(
             np.all(np.isnan(slice_dx), axis=1),
             0,  # fallback when all NaNs
-            np.nanmean(slice_dx, axis=1)
+            np.nanmean(slice_dx, axis=1),
         )
 
         for t in range(2 * p + 1, n_ts):
-            adx[:, t] = ((adx[:, t-1] * (p - 1)) + dx[:, t]) / p
+            adx[:, t] = ((adx[:, t - 1] * (p - 1)) + dx[:, t]) / p
 
         self.indicator_data[:, self.key, :] = adx

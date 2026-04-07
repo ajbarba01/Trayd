@@ -13,14 +13,11 @@ class ROC(Indicator):
 
         super().__init__("ROC")
 
-
     def get_warmup_window(self) -> int:
         return self.window
 
-
     def _get_settings(self) -> list:
         return [self.window, self.price]
-    
 
     def compute(self):
         values = self.historical.bar_data[:, :, self.price]

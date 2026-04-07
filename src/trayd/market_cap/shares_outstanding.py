@@ -9,7 +9,9 @@ from trayd.util import get_path
 
 class SharesOutstanding:
     CACHE_FILE = get_path("market_cap", "shares_outstanding_cache.json")
-    TEMP_CACHE_FILE = get_path("market_cap", "shares_outstanding_cache.tmp.json")
+    TEMP_CACHE_FILE = get_path(
+        "market_cap", "shares_outstanding_cache.tmp.json"
+    )
 
     def __init__(self):
         self.start_time = time.time()
@@ -28,9 +30,16 @@ class SharesOutstanding:
                 for symbol, value in raw.items():
                     start_ts = pd.Timestamp(value["range"][0])
                     end_ts = pd.Timestamp(value["range"][1])
-                    data = {pd.Timestamp(k): v for k, v in value["data"].items()}
-                    self.shares_outstanding_cache[symbol] = {"range": (start_ts, end_ts), "data": data}
-            print(f"Loaded cache for {len(self.shares_outstanding_cache)} tickers.")
+                    data = {
+                        pd.Timestamp(k): v for k, v in value["data"].items()
+                    }
+                    self.shares_outstanding_cache[symbol] = {
+                        "range": (start_ts, end_ts),
+                        "data": data,
+                    }
+            print(
+                f"Loaded cache for {len(self.shares_outstanding_cache)} tickers."
+            )
         else:
             self.shares_outstanding_cache = {}
             print("No cache file found. Starting fresh.")
@@ -50,7 +59,9 @@ class SharesOutstanding:
         print(f"Saved cache for {len(self.shares_outstanding_cache)} tickers.")
 
     # ------------------ QUERY LOGIC ------------------
-    def query_all(self, symbols: list[str], start_date="2020-01-01", end_date="2025-12-31"):
+    def query_all(
+        self, symbols: list[str], start_date="2020-01-01", end_date="2025-12-31"
+    ):
         start_date = pd.Timestamp(start_date)
         end_date = pd.Timestamp(end_date)
 
@@ -67,7 +78,7 @@ class SharesOutstanding:
                     symbol=symbol,
                     filing_type="10-Q",
                     start_date=start_date.strftime("%Y-%m-%d"),
-                    end_date=end_date.strftime("%Y-%m-%d")
+                    end_date=end_date.strftime("%Y-%m-%d"),
                 )
                 # Convert keys to pd.Timestamp
                 new_data.update({pd.Timestamp(k): v for k, v in shares.items()})
@@ -84,9 +95,11 @@ class SharesOutstanding:
                         symbol=symbol,
                         filing_type="10-Q",
                         start_date=start_date.strftime("%Y-%m-%d"),
-                        end_date=left_end.strftime("%Y-%m-%d")
+                        end_date=left_end.strftime("%Y-%m-%d"),
                     )
-                    new_data.update({pd.Timestamp(k): v for k, v in shares.items()})
+                    new_data.update(
+                        {pd.Timestamp(k): v for k, v in shares.items()}
+                    )
 
                 # RIGHT GAP
                 if end_date > cached_end:
@@ -95,9 +108,11 @@ class SharesOutstanding:
                         symbol=symbol,
                         filing_type="10-Q",
                         start_date=right_start.strftime("%Y-%m-%d"),
-                        end_date=end_date.strftime("%Y-%m-%d")
+                        end_date=end_date.strftime("%Y-%m-%d"),
                     )
-                    new_data.update({pd.Timestamp(k): v for k, v in shares.items()})
+                    new_data.update(
+                        {pd.Timestamp(k): v for k, v in shares.items()}
+                    )
 
                 # Merge with cached
                 new_data = {**cached_data, **new_data}
@@ -112,7 +127,7 @@ class SharesOutstanding:
             # ---------- UPDATE CACHE ----------
             self.shares_outstanding_cache[symbol] = {
                 "range": (final_start, final_end),
-                "data": new_data
+                "data": new_data,
             }
 
             for dt, shares in sorted(new_data.items()):

@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class OHLCV(IntEnum):
     OPEN = 0
     HIGH = 1

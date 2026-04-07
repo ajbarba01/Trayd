@@ -31,7 +31,7 @@ while current < end:
     current_symbols = index.current_symbols
     caps = {}
     for symbol in current_symbols:
-        if symbol in dated_data:        
+        if symbol in dated_data:
             entry = dated_data[symbol]
             if current in entry:
                 cap = entry[current]["marketCap"]
@@ -41,15 +41,12 @@ while current < end:
     keys = sorted(caps, key=caps.get, reverse=True)[:N]
     if keys:
         top_n[current_date] = keys
-    
+
     current = (current + pd.Timedelta(days=1)).normalize()
     index.update_to(current)
 
 
-top_n_json = {
-    date.isoformat(): symbols
-    for date, symbols in top_n.items()
-}
+top_n_json = {date.isoformat(): symbols for date, symbols in top_n.items()}
 
 # Output path
 data_path = get_path("index", "data")

@@ -12,7 +12,9 @@ class MarketCapDownloader(ParquetDownloader):
         super().__init__(cache_path, "", Granularity.DAY, data_path=data_path)
         self.api_key = FMP_API_KEY
 
-    def _fetch_market_cap(self, symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def _fetch_market_cap(
+        self, symbol: str, start_date: str, end_date: str
+    ) -> pd.DataFrame:
         """Fetch historical market cap data from FMP API for a given symbol and date range."""
         url = (
             f"https://financialmodelingprep.com/stable/historical-market-capitalization"
@@ -33,8 +35,8 @@ class MarketCapDownloader(ParquetDownloader):
             return pd.DataFrame()
 
         df = pd.DataFrame(data)
-        df['date'] = pd.to_datetime(df['date'])
-        df = df.sort_values('date').reset_index(drop=True)
+        df["date"] = pd.to_datetime(df["date"])
+        df = df.sort_values("date").reset_index(drop=True)
         return df
 
     def download_all(self, symbols: list[str], start_date: str, end_date: str):
@@ -65,7 +67,9 @@ class MarketCapDownloader(ParquetDownloader):
                     self.pbar.next(symbol)
 
         except KeyboardInterrupt:
-            Logger.log_message("KeyboardInterrupt detected, stopping downloads...")
+            Logger.log_message(
+                "KeyboardInterrupt detected, stopping downloads..."
+            )
 
         finally:
             if self.cache_updates:

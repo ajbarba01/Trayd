@@ -15,15 +15,12 @@ class OCMA(Indicator):
         self.window = window
         super().__init__("OCMA")
 
-
     def get_warmup_window(self) -> int:
         # previous close + rolling window + forward shift
         return self.window + 1
 
-
     def _get_settings(self) -> list:
         return [self.window]
-
 
     def compute(self):
         opens = self.historical.bar_data[:, :, OHLCV.OPEN]

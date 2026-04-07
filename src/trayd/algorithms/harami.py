@@ -16,17 +16,17 @@ class Harami(Algorithm):
 
         self.portfolio_max_size = 3
 
-
     def on_start(self):
         self.test_index = self.add_index(SP500())
 
         self.sma200 = self.add_indicator(SMA(30))
         self.roc = self.add_indicator(ROC(252))
 
-
     def on_tick(self):
-        if not self.get_close("SPY") > self.sma200.get("SPY"): return
-        if not self.get_close("OEF") > self.sma200.get("OEF"): return
+        if not self.get_close("SPY") > self.sma200.get("SPY"):
+            return
+        if not self.get_close("OEF") > self.sma200.get("OEF"):
+            return
         # if not self.get_close("IWM") > self.sma200.get("IWM"): return
 
         symbols = self.test_index.get_valid_symbols()
@@ -45,11 +45,16 @@ class Harami(Algorithm):
 
             if bearish_prev and bullish_curr and inside:
                 self.buy_up_to(symbol)
-            elif bearish_prev and bullish_curr and lower_top and not higher_bottom and higher_mid:
+            elif (
+                bearish_prev
+                and bullish_curr
+                and lower_top
+                and not higher_bottom
+                and higher_mid
+            ):
                 self.buy_up_to(symbol)
             else:
                 continue
-
 
     # def on_tick(self):
     #     # if not self.get_close("SPY") < self.sma200.get("SPY"): return
@@ -79,18 +84,18 @@ class Harami(Algorithm):
     #         else:
     #             continue
 
-
     def on_position_opened(self, position: Position):
         self.set_stop_take(position.symbol, position.avg_entry_price, 2, 2)
 
-
     def on_position_closed(self, position):
         return
-        print(position.symbol, position.entry_time, position.avg_entry_price, position.exit_time, position.avg_fill_price)
-            
-    
+        print(
+            position.symbol,
+            position.entry_time,
+            position.avg_entry_price,
+            position.exit_time,
+            position.avg_fill_price,
+        )
 
     def end(self):
         pass
-
-

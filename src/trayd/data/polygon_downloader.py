@@ -23,15 +23,23 @@ class PolygonDownloader(ParquetDownloader):
         self.max_yrs = 5
 
     # ---------- DOWNLOAD METHOD ----------
-    def download_all(self, symbols: list[str], start_date: str, end_date: str, intraday_only: bool = True):
+    def download_all(
+        self,
+        symbols: list[str],
+        start_date: str,
+        end_date: str,
+        intraday_only: bool = True,
+    ):
         return
         os.makedirs(self.data_dir, exist_ok=True)
         start_dt = datetime.fromisoformat(start_date)
-        end_dt   = datetime.fromisoformat(end_date)
+        end_dt = datetime.fromisoformat(end_date)
 
-        five_years_ago = datetime.utcnow() - timedelta(days=self.max_yrs*365)
+        five_years_ago = datetime.utcnow() - timedelta(days=self.max_yrs * 365)
         if start_dt < five_years_ago:
-            Logger.log_message(f"Intraday start date {start_dt.date()} is older than 5 years ago.")
+            Logger.log_message(
+                f"Intraday start date {start_dt.date()} is older than 5 years ago."
+            )
 
         # Initialize progress bar
         self.pbar.start(symbols)
@@ -46,7 +54,7 @@ class PolygonDownloader(ParquetDownloader):
                         timespan=self.timespan,
                         from_=start_dt.strftime("%Y-%m-%d"),
                         to=end_dt.strftime("%Y-%m-%d"),
-                        limit=40000
+                        limit=40000,
                     ):
                         all_bars.append(bar)
 
@@ -54,15 +62,20 @@ class PolygonDownloader(ParquetDownloader):
                         self.pbar.next()
                         continue
 
-                    df = pd.DataFrame([{
-                        "Open": b.open,
-                        "High": b.high,
-                        "Low": b.low,
-                        "Adj Close": b.close,
-                        "Volume": b.volume,
-                        "VWAP": b.vwap,
-                        "t": datetime.fromtimestamp(b.timestamp / 1000)
-                    } for b in all_bars])
+                    df = pd.DataFrame(
+                        [
+                            {
+                                "Open": b.open,
+                                "High": b.high,
+                                "Low": b.low,
+                                "Adj Close": b.close,
+                                "Volume": b.volume,
+                                "VWAP": b.vwap,
+                                "t": datetime.fromtimestamp(b.timestamp / 1000),
+                            }
+                            for b in all_bars
+                        ]
+                    )
 
                     df = df.set_index("t").sort_index()
 
@@ -83,8 +96,9 @@ class PolygonDownloader(ParquetDownloader):
                     self.pbar.next(symbol)
 
         except KeyboardInterrupt:
-            Logger.log_message("KeyboardInterrupt detected, stopping downloads...")
-
+            Logger.log_message(
+                "KeyboardInterrupt detected, stopping downloads..."
+            )
 
         finally:
             if self.cache_updates:

@@ -19,26 +19,19 @@ class ShortTest(Algorithm):
         self.started = False
         self.day_count = 0
 
-
     def on_start(self):
         self.index = self.add_index(Top50())
-
 
     def new_day(self):
         if not self.started:
             self.started = True
             self.short_up_to("SPY")
-        
+
         else:
             self.day_count += 1
 
         if self.day_count == 30:
             self.close_position("SPY")
 
-            
-    
-
     def end(self):
         pass
-
-

@@ -9,6 +9,7 @@ WAYBACK_CDX_URL = "https://web.archive.org/cdx/search/cdx"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 OUTPUT_FILE = "historical_sp100.json"
 
+
 def get_wayback_snapshots(url, start_year=2000, end_year=2025):
     params = {
         "url": url,
@@ -16,12 +17,15 @@ def get_wayback_snapshots(url, start_year=2000, end_year=2025):
         "from": start_year,
         "to": end_year,
         "filter": "statuscode:200",
-        "collapse": "timestamp"
+        "collapse": "timestamp",
     }
-    response = requests.get(WAYBACK_CDX_URL, params=params, headers=HEADERS, timeout=10)
+    response = requests.get(
+        WAYBACK_CDX_URL, params=params, headers=HEADERS, timeout=10
+    )
     response.raise_for_status()
     data = response.json()
     return [entry[1] for entry in data[1:]]  # skip header
+
 
 def scrape_sp100_from_snapshot(snapshot_timestamp, max_retries=3):
     snapshot_url = f"https://web.archive.org/web/{snapshot_timestamp}/https://en.wikipedia.org/wiki/S%26P_100"
@@ -45,25 +49,28 @@ def scrape_sp100_from_snapshot(snapshot_timestamp, max_retries=3):
             time.sleep(2)
     return []
 
+
 def save_data(historical_data, filename=OUTPUT_FILE):
     """
     Sort data by timestamp before saving
     """
     sorted_items = sorted(
-        historical_data.items(), 
-        key=lambda x: datetime.strptime(x[0], "%Y-%m-%d")
+        historical_data.items(),
+        key=lambda x: datetime.strptime(x[0], "%Y-%m-%d"),
     )
     sorted_data = {k: v for k, v in sorted_items}
-    
+
     with open(filename, "w") as f:
         json.dump(sorted_data, f, indent=2)
     print(f"Saved {len(sorted_data)} snapshots to {filename}")
+
 
 def load_existing_data(filename=OUTPUT_FILE):
     if os.path.exists(filename):
         with open(filename, "r") as f:
             return json.load(f)
     return {}
+
 
 def get_historical_sp100(start_year=2010, end_year=2025, delay=1.0):
     url = "https://en.wikipedia.org/wiki/S%26P_100"
@@ -75,7 +82,9 @@ def get_historical_sp100(start_year=2010, end_year=2025, delay=1.0):
 
     try:
         for ts in snapshots:
-            timestamp_str = datetime.strptime(ts, "%Y%m%d%H%M%S").strftime("%Y-%m-%d")
+            timestamp_str = datetime.strptime(ts, "%Y%m%d%H%M%S").strftime(
+                "%Y-%m-%d"
+            )
             if timestamp_str in existing_dates:
                 continue  # skip already scraped snapshots
 
@@ -91,6 +100,7 @@ def get_historical_sp100(start_year=2010, end_year=2025, delay=1.0):
 
     save_data(historical_data)
     return historical_data
+
 
 if __name__ == "__main__":
     historical_sp100 = get_historical_sp100(2000, 2026)

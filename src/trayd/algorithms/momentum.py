@@ -17,13 +17,11 @@ class Momentum(Algorithm):
 
         self.portfolio_max_size = 3
 
-
     def on_start(self):
         self.index = self.add_index(SP100())
 
         self.roc = self.add_indicator(ROC(252))
         self.sma200 = self.add_indicator(SMA(200))
-
 
     def new_day(self):
         ranked = self.get_top_roc()
@@ -35,19 +33,13 @@ class Momentum(Algorithm):
         for symbol in ranked:
             self.buy_up_to(symbol)
 
-
-
     def on_position_opened(self, position):
         # self.set_stop_take(position.symbol, position.avg_entry_price, 2, 1)
         return
         self.set_stop_loss_ATR(position.symbol, position.avg_entry_price, 3)
 
-
-
     def get_top_roc(self):
-        ranked = self.roc.rank(self.index.get_valid_symbols(), max_len=self.portfolio_max_size)
+        ranked = self.roc.rank(
+            self.index.get_valid_symbols(), max_len=self.portfolio_max_size
+        )
         return ranked
-    
-
-
-

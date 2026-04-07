@@ -12,7 +12,9 @@ class Index:
         self.index_start_date: pd.Timestamp | None = None
 
         # CSV file: symbol,start_date,end_date
-        self.index_data_path = get_path("index", "data", f"index_{self.index_name}.csv")
+        self.index_data_path = get_path(
+            "index", "data", f"index_{self.index_name}.csv"
+        )
         self.index_data: pd.DataFrame | None = None
 
         # Maps day -> list of symbols added or removed
@@ -39,15 +41,21 @@ class Index:
     def load_all(self, start_date_str: str) -> pd.Timestamp:
         start_date = pd.to_datetime(start_date_str).normalize()
         # Load CSV
-        self.index_data = pd.read_csv(self.index_data_path, parse_dates=['start_date', 'end_date'])
+        self.index_data = pd.read_csv(
+            self.index_data_path, parse_dates=["start_date", "end_date"]
+        )
 
         timestamps = set()
         first_timestamp = pd.Timestamp.now().normalize()
 
         for _, row in self.index_data.iterrows():
-            symbol = row['symbol']
-            start_ts = pd.Timestamp(row['start_date']).normalize()
-            end_ts = pd.Timestamp(row['end_date']).normalize() if pd.notna(row['end_date']) else None
+            symbol = row["symbol"]
+            start_ts = pd.Timestamp(row["start_date"]).normalize()
+            end_ts = (
+                pd.Timestamp(row["end_date"]).normalize()
+                if pd.notna(row["end_date"])
+                else None
+            )
 
             # Track all symbols
             self.all_symbols.append(symbol)
@@ -85,7 +93,10 @@ class Index:
     def update_to(self, timestamp: pd.Timestamp):
         ts = pd.Timestamp(timestamp).normalize()
 
-        while self.current_ts_idx < self.num_ts and ts >= self.all_timestamps[self.current_ts_idx]:
+        while (
+            self.current_ts_idx < self.num_ts
+            and ts >= self.all_timestamps[self.current_ts_idx]
+        ):
             current_day = self.all_timestamps[self.current_ts_idx]
 
             # Add symbols
@@ -108,8 +119,11 @@ class Index:
         self.historical = historical
 
     def get_valid_symbols(self) -> list[str]:
-        return [s for s in self.all_symbols if s in self.current_symbols and self.historical.has_bar(s)]
-
+        return [
+            s
+            for s in self.all_symbols
+            if s in self.current_symbols and self.historical.has_bar(s)
+        ]
 
     def get_all_symbols(self) -> list[str]:
         return self.all_symbols

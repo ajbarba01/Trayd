@@ -18,7 +18,6 @@ class Test(Algorithm):
 
         self.portfolio_max_size = 5
 
-
     def on_start(self):
         self.test_index = self.add_index(Top50())
 
@@ -27,9 +26,9 @@ class Test(Algorithm):
         self.atr5 = self.add_indicator(ATR(5))
         self.atr10 = self.add_indicator(ATR(10))
 
-
     def on_tick(self):
-        if not self.get_close("SPY") > self.sma200.get("SPY"): return
+        if not self.get_close("SPY") > self.sma200.get("SPY"):
+            return
         # if not self.get_close("OEF") > self.sma200.get("OEF"): return
         # if not self.get_close("IWM") > self.sma200.get("IWM"): return
 
@@ -39,14 +38,9 @@ class Test(Algorithm):
                 # if self.atr5(symbol) < self.atr10(symbol):
                 self.buy_up_to(symbol)
 
-
     def on_position_opened(self, position: Position):
         # self.set_stop_loss_ATR(position.symbol, position.avg_entry_price, 2)
-        self.set_stop_take(position.symbol, position.avg_entry_price, 2, 2  )
-            
-    
+        self.set_stop_take(position.symbol, position.avg_entry_price, 2, 2)
 
     def end(self):
         pass
-
-

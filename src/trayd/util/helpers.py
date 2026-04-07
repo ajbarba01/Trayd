@@ -9,15 +9,19 @@ GREEN = "\033[92m"
 RED = "\033[91m"
 YELLOW = "\033[93m"
 RESET = "\033[0m"
-    
+
+
 def floor_cent(amount: float):
     return math.floor(amount * 100) / 100
+
 
 def ceil_cent(amount: float):
     return math.ceil(amount * 100) / 100
 
 
-def wrap_color(to_wrap: float, value: float, zero: float = 0, flip: bool = False) -> str:
+def wrap_color(
+    to_wrap: float, value: float, zero: float = 0, flip: bool = False
+) -> str:
 
     if flip:
         color = RED if value > zero else GREEN if value < zero else YELLOW
@@ -32,8 +36,15 @@ def fmt(amount, decimals: int = 2):
     return s.rstrip("0").rstrip(".")
 
 
-def format_float(value: float, effective_zero: float = 0, decimal_places: float = 2, flip: bool = False):
-    return wrap_color(fmt(value, decimal_places), value, zero=effective_zero, flip=flip)
+def format_float(
+    value: float,
+    effective_zero: float = 0,
+    decimal_places: float = 2,
+    flip: bool = False,
+):
+    return wrap_color(
+        fmt(value, decimal_places), value, zero=effective_zero, flip=flip
+    )
 
 
 def format_USD(amount: float, decimal_places: int = 2):
@@ -76,7 +87,7 @@ def stdev(list: list):
 
 
 def percent_improvement(initial: float, final: float) -> str:
-    improvement = (final / initial - 1)
+    improvement = final / initial - 1
     return format_percent(improvement)
 
 
@@ -126,32 +137,47 @@ def max_single_day_loss(values: list[float]) -> float:
     return max_loss
 
 
-def calculate_sharpe(portfolio_values: list[float], annual_risk_free: float = 0.0):
+def calculate_sharpe(
+    portfolio_values: list[float], annual_risk_free: float = 0.0
+):
     vals = np.array(portfolio_values)
     daily_returns = vals[1:] / vals[:-1] - 1
-    daily_rf = (1 + annual_risk_free)**(1/252) - 1  # convert annual RF to daily
-    sharpe = (np.mean(daily_returns - daily_rf)) / np.std(daily_returns, ddof=1) * np.sqrt(252)
+    daily_rf = (1 + annual_risk_free) ** (
+        1 / 252
+    ) - 1  # convert annual RF to daily
+    sharpe = (
+        (np.mean(daily_returns - daily_rf))
+        / np.std(daily_returns, ddof=1)
+        * np.sqrt(252)
+    )
     return sharpe
 
-def annualized_risk_adjusted_return(portfolio_values: list[float], annual_risk_free: float = 0.03):
+
+def annualized_risk_adjusted_return(
+    portfolio_values: list[float], annual_risk_free: float = 0.03
+):
     vals = np.array(portfolio_values)
     daily_returns = vals[1:] / vals[:-1] - 1
     n_days = len(daily_returns)
-    
+
     # Annualized return
     total_return = vals[-1] / vals[0] - 1
     annualized_return = (1 + total_return) ** (252 / n_days) - 1
-    
+
     # Annualized volatility
     annualized_vol = np.std(daily_returns, ddof=1) * np.sqrt(252)
-    
+
     # Annualized Sharpe ratio
-    daily_rf = (1 + annual_risk_free)**(1/252) - 1
-    sharpe = (np.mean(daily_returns - daily_rf)) / np.std(daily_returns, ddof=1) * np.sqrt(252)
-    
+    daily_rf = (1 + annual_risk_free) ** (1 / 252) - 1
+    sharpe = (
+        (np.mean(daily_returns - daily_rf))
+        / np.std(daily_returns, ddof=1)
+        * np.sqrt(252)
+    )
+
     # Risk-adjusted return
     risk_adjusted_return = annual_risk_free + sharpe * annualized_vol
-    
+
     return risk_adjusted_return
 
 
@@ -164,7 +190,7 @@ def SMA(values: list[float], period: int) -> list[float]:
         raise ValueError("Period must be > 0")
     sma = [0.0] * len(values)
     for i in range(period - 1, len(values)):
-        sma[i] = sum(values[i - period + 1:i + 1]) / period
+        sma[i] = sum(values[i - period + 1 : i + 1]) / period
     return sma
 
 
@@ -193,6 +219,7 @@ def is_intraday(current_time: time):
 def equity_to_returns(equity: list[float]):
     vals = np.asarray(equity)
     return vals[1:] / vals[:-1] - 1
+
 
 def get_correlation(equity_a: list[float], equity_b: list[float]):
     ra = equity_to_returns(equity_a)
@@ -246,7 +273,4 @@ def surround_1(values: dict) -> dict:
 
     mean_val = total / len(vals)
 
-    return {
-        keys[i]: vals[i] / mean_val
-        for i in range(len(keys))
-    }
+    return {keys[i]: vals[i] / mean_val for i in range(len(keys))}
