@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "trayd"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "polygon-api-client",
+    "yfinance",
+    "sec_cik_mapper",
+    "dotenv"
+]
+
+[project.scripts]
+trayd = "trayd.main:main"
+
+[tool.hatchling.build.targets.wheel]
+packages = ["src/trayd"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.black]
+line-length = 80
+
+[tool.ruff]
+line-length = 80

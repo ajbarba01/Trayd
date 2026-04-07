@@ -1,0 +1,7 @@
+{
+    "MACD_BUYING": false,
+    "MACD_SELLING": false,
+    "MACD_SOLD_OPEN": false,
+    "MACD_BOUGHT_CLOSE": false,
+    "MACD_CLOSED_TODAY": false
+}

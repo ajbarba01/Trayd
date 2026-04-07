@@ -1,0 +1,106 @@
+top_50 = [
+    "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "AVGO", "GOOG", "META", "TSLA", "JPM",
+    "WMT", "LLY", "V", "ORCL", "XOM", "JNJ", "MA", "NFLX", "BAC", "COST",
+    "HD", "PG", "CSCO", "AMD", "ABT", "INTU", "PEP", "QCOM", "SCHW", "ACN",
+    "NEE", "AMGN", "T", "DIS", "MRK", "UBER", "GS", "IBM", "RTX", "MCD",
+    "WFC", "PM", "CAT", "SPGI", "AXP", "MS", "BA", "TMO"
+]
+
+queried = [
+    "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "AVGO", "GOOG", "META", "TSLA", "JPM",
+    "WMT", "LLY", "V", "ORCL", "XOM", "JNJ", "MA", "NFLX", "BAC", "COST",
+    "HD", "PG", "CSCO", "AMD", "ABT", "INTU", "PEP", "QCOM", "SCHW", "ACN",
+    "NEE", "AMGN", "T", "DIS", "MRK", "UBER", "GS", "IBM", "RTX", "MCD",
+    "WFC", "PM", "CAT", "SPGI", "AXP", "MS", "BA", "TMO", "BRK.B", "PFE",
+    "UNP", "UNH", "KO", "CVX", "TM", "ADBE", "CMCSA", "ABBV", "MU", "TMUS",
+    "COP", "DHR", "SHEL", "PYPL", "APP", "AXP", "BKNG", "INTC", "BX", "VZ",
+    "GE", "LRCX", "ANET", "NKE", "AMAT", "C", "CRM", "MRK", "NOW", "PLTR",
+    "SHOP", "TXN", "UPS"
+    
+]
+
+top_10 = [
+    "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "AVGO", "GOOG", "META", "TSLA",
+]
+
+other = [
+    'BRK.B', 'UNP', 'PFE', 'UNH', 'CVX', 'ADBE', 'TM', 'KO', 'ABBV', 'CMCSA', 
+    'MU', 'COP', 'TMUS', 'SHEL', 'DHR', 'PYPL', 'APP', 'AXP', 'BKNG', 'INTC', 
+    'VZ', 'BX', 'GE', 'ANET', 'LRCX', 'NKE', 'ISRG', 'MRK', 'C', 'NOW', 
+    'AMAT', 'CRM', 'PLTR', 'SHOP', 'UPS', 'TXN'
+]
+
+all_in_two_years = [
+    "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "AVGO", "GOOG", "META", "TSLA", "JPM",
+    "WMT", "LLY", "V", "ORCL", "XOM", "JNJ", "MA", "NFLX", "BAC", "COST",
+    "HD", "PG", "CSCO", "AMD", "ABT", "INTU", "PEP", "QCOM", "SCHW", "ACN",
+    "NEE", "AMGN", "T", "DIS", "MRK", "UBER", "GS", "IBM", "RTX", "MCD",
+    "WFC", "PM", "CAT", "SPGI", "AXP", "MS", "BA", "TMO", 'BRK.B', 'UNP', 
+    'PFE', 'UNH', 'CVX', 'ADBE', 'TM', 'KO', 'ABBV', 'CMCSA', 'MU', 'COP', 
+    'TMUS', 'SHEL', 'DHR', 'PYPL', 'APP', 'AXP', 'BKNG', 'INTC', 'VZ', 'BX', 
+    'GE', 'ANET', 'LRCX', 'NKE', 'ISRG', 'MRK', 'C', 'NOW', 'AMAT', 'CRM', 
+    'PLTR', 'SHOP', 'UPS', 'TXN'
+]
+
+all_100 = ['LIN', 'UPS', 'SNPS', 'REGN', 'AMAT', 'BSX', 'WELL', 'BAC', 'JNJ', 
+    'ETN', 'V', 'ABT', 'QCOM', 'LMT', 'HON', 'DHR', 'TXN', 'CMCSA', 'IBM', 
+    'ICE', 'BMY', 'MRK', 'SCHW', 'ELV', 'LLY', 'CVS', 'AVGO', 'HD', 'AMZN', 
+    'AMGN', 'INTC', 'VRTX', 'BKNG', 'PGR', 'WFC', 'NVDA', 'MDLZ', 'PANW', 
+    'RTX', 'FI', 'TMO', 'WMT', 'COP', 'NOW', 'PG', 'INTU', 'DIS', 'HOOD', 
+    'MO', 'BRK-B', 'CVX', 'AXP', 'T', 'CI', 'MA', 'UBER', 'MDT', 'SLB', 
+    'SBUX', 'GOOG', 'PFE', 'NKE', 'TJX', 'LOW', 'VZ', 'TSLA', 'NEE', 'CEG', 
+    'MSFT', 'AAPL', 'UNH', 'ACN', 'CB', 'TMUS', 'META', 'PLTR', 'CSCO', 
+    'GILD', 'ADBE', 'UNP', 'KKR', 'GEV', 'DE', 'SYK', 'ISRG', 'SPGI', 
+    'LRCX', 'GS', 'GE', 'ADI', 'HCA', 'DASH', 'MS', 'BA', 'SO', 'PLD', 
+    'APH', 'BLK', 'XOM', 'ANET', 'ABBV', 'MCD', 'PEP', 'PM', 'CRM', 'APP', 
+    'NFLX', 'KO', 'BX', 'COF', 'C', 'CAT', 'PH', 'CRWD', 'MU', 'JPM', 'MMC', 
+    'COST', 'AMT', 'KLAC', 'GOOGL', 'ORCL', 'AMD', 'ADP', 'APO']
+
+
+all_in_five_years = [
+    "AAPL", "ABBV", "ABT", "ACN", "ADBE", "ADI", "ADM", "ADP", "ADSK", "AEP",
+    "AJG", "AMAT", "AMD", "AMGN", "AMT", "AMZN", "ANET", "AON", "APD", "APH",
+    "APP", "AVGO", "AXP", "BA", "BAC", "BDX", "BKNG", "BLK", "BMY", "BSX",
+    "BX", "C", "CAT", "CB", "CCI", "CDNS", "CEG", "CHTR", "CI", "CL",
+    "CMCSA", "CME", "COF", "COP", "COST", "CRM", "CRWD", "CSCO", "CSX", "CTAS",
+    "CTSH", "CVS", "CVX", "DE", "DHR", "DIS", "DUK", "EL", "EQIX", "FIS",
+    "GE", "GILD", "GOOG", "GOOGL", "GS", "HCA", "HD", "HON", "HOOD", "IBM",
+    "INTC", "INTU", "ISRG", "JNJ", "JPM", "KO", "LB", "LIN", "LLY", "LOW",
+    "LRCX", "MA", "MCD", "MDT", "META", "MRK", "MS", "MSFT", "MU", "NEE",
+    "NFLX", "NKE", "NOW", "NVDA", "ORCL", "PEP", "PFE", "PG", "PLD", "PLTR",
+    "PM", "PYPL", "QCOM", "RTX", "SCHW", "T", "TMO", "TMUS", "TSLA", "TXN",
+    "UBER", "UNH", "UNP", "UPS", "V", "VZ", "WFC", "WMT", "XOM"
+]
+
+
+current = [
+    "NVDA", "GOOG", "AAPL", "MSFT", "AMZN",
+    "META", "AVGO", "TSLA", "BRK-B", "LLY",
+    "JPM", "WMT", "V", "ORCL", "MA",
+    "XOM", "JNJ", "PLTR", "ABBV", "BAC",
+    "COST", "NFLX", "MU", "HD", "GE",
+    "AMD", "PG", "CVX", "UNH", "WFC",
+    "CSCO", "MS", "KO", "GS", "CAT",
+    "IBM", "MRK", "AXP", "LRCX", "CRM",
+    "RTX", "PM", "AMAT", "TMO", "C",
+    "TMUS", "ABT", "MCD", "APP"
+]
+
+
+current_sp100 = [
+    "AAPL", "ABBV", "ABT", "ACN", "ADBE", "AIG", "AMD", "AMGN", "AMT", "AMZN",
+    "AVGO", "AXP", "BA", "BAC", "BK", "BKNG", "BLK", "BMY", "BRK-B", "C",
+    "CAT", "CL", "CMCSA", "COF", "COP", "COST", "CRM", "CSCO", "CVS", "CVX",
+    "DE", "DHR", "DIS", "DUK", "EMR", "FDX", "GD", "GE", "GILD", "GM",
+    "GOOG", "GOOGL", "GS", "HD", "HON", "IBM", "INTC", "INTU", "ISRG", "JNJ",
+    "JPM", "KO", "LIN", "LLY", "LMT", "LOW", "MA", "MCD", "MDLZ", "MDT",
+    "MET", "META", "MMM", "MO", "MRK", "MS", "MSFT", "NEE", "NFLX", "NKE",
+    "NOW", "NVDA", "ORCL", "PEP", "PFE", "PG", "PLTR", "PM", "PYPL", "QCOM",
+    "RTX", "SBUX", "SCHW", "SO", "SPG", "T", "TGT", "TMO", "TMUS", "TSLA",
+    "TXN", "UBER", "UNH", "UNP", "UPS", "USB", "V", "VZ", "WFC", "WMT",
+    "XOM"
+]
+
+
+def get_top_n(num_symbols: int):
+    return top_50[:num_symbols]
