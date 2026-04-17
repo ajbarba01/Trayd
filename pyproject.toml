@@ -9,10 +9,14 @@ requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "pandas",
+    "matplotlib",
     "polygon-api-client",
     "yfinance",
     "sec_cik_mapper",
-    "dotenv"
+    "python-dotenv",
+    "requests",
+    "beautifulsoup4",
+    "tqdm"
 ]
 
 [project.scripts]
