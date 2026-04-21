@@ -5,7 +5,7 @@ from trayd.algorithms import *
 
 def main():
     backtest = Backtest(
-        "2020-12-10",
+        "2023-12-10",
         "2025-12-19",
         SellOpen(),
         10_000,

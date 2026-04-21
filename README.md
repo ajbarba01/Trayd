@@ -4,10 +4,10 @@
 
 This project aims to be a free-to-use, efficient system for backtesting algorithmic trading strategies. It features:
 
--   Data aggregation
--   Statistical analysis of strategies
--   A suite of sample strategies
--   The option for 5 minute or 1 day ticks
+- Data aggregation
+- Statistical analysis of strategies
+- A suite of sample strategies
+- The option for 5 minute or 1 day ticks
 
 Data is aggregated from Yahoo Finance and Massive, with Massive requiring an API key in the .env.
 
@@ -20,6 +20,11 @@ Data is aggregated from Yahoo Finance and Massive, with Massive requiring an API
 5. Modify src/trayd/main to test this algorithm
 
 Data aggregation can take a while depending on your Massive.com subscription tier, the index you are using, and the timeframe you are backtesting. However, this data will be stored locally as .parquet files and will never need to be redownloaded.
+
+## Output Examples
+
+![Output Example](output_ex1.png)
+![Graph Example](graph_ex1.png)
 
 ## Disclaimer
 
